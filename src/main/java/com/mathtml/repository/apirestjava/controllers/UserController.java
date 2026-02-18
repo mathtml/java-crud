@@ -29,7 +29,7 @@ public class UserController {
 
     @PutMapping("/{id}/desactivate")
     public void deactivate(@PathVariable UUID id) {
-        service.desactivateUser(id);
+        service.deactivateUser(id);
     }
 
     @DeleteMapping("/{id}")

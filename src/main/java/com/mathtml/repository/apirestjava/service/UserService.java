@@ -4,6 +4,7 @@ import com.mathtml.repository.apirestjava.model.User;
 import com.mathtml.repository.apirestjava.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.mathtml.repository.apirestjava.exceptions.BusinessException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,9 +21,26 @@ public class UserService {
     }
 
     public User createUser(User user) {
+        if (repository.findByEmail(user.getEmail()).isPresent()) {
+            throw new BusinessException(
+                    409,
+                    "email_already_registered",
+                    "Email already exists"
+            );
+        }
+
+        if (repository.findByDocumentNumber(user.getDocumentNumber()).isPresent()) {
+            throw new BusinessException(
+                    409,
+                    "document_already_registered",
+                    "Document already exists"
+            );
+        }
+
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
         user.setFgInactive(false);
+
         return repository.save(user);
     }
 
@@ -34,7 +52,7 @@ public class UserService {
     }
 
     @Transactional
-    public void desactivateUser(UUID userId) {
+    public void deactivateUser(UUID userId) {
         Optional<User> userOpt = repository.findById(userId);
         if (userOpt.isPresent()) {
             User user = userOpt.get();
