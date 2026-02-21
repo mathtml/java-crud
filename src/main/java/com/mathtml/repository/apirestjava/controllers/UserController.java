@@ -1,5 +1,6 @@
 package com.mathtml.repository.apirestjava.controllers;
 
+import com.mathtml.repository.apirestjava.dto.ApiResponse;
 import com.mathtml.repository.apirestjava.service.UserService;
 import org.springframework.web.bind.annotation.*;
 import com.mathtml.repository.apirestjava.model.User;
@@ -27,9 +28,14 @@ public class UserController {
         return service.getAllActiveUsers();
     }
 
-    @PutMapping("/{id}/desactivate")
-    public void deactivate(@PathVariable UUID id) {
-        service.deactivateUser(id);
+    @PutMapping("/{id}/deactivate")
+    public ApiResponse deactivate(@PathVariable UUID id) {
+        return service.deactivateUser(id);
+    }
+
+    @PutMapping("/{id}/activate")
+    public ApiResponse activate(@PathVariable UUID id) {
+        return service.activateUser(id);
     }
 
     @DeleteMapping("/{id}")

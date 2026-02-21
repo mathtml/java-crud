@@ -1,5 +1,6 @@
 package com.mathtml.repository.apirestjava.service;
 
+import com.mathtml.repository.apirestjava.dto.ApiResponse;
 import com.mathtml.repository.apirestjava.model.User;
 import com.mathtml.repository.apirestjava.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -52,13 +53,51 @@ public class UserService {
     }
 
     @Transactional
-    public void deactivateUser(UUID userId) {
-        Optional<User> userOpt = repository.findById(userId);
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            user.setFgInactive(true);
-            repository.save(user);
+    public ApiResponse deactivateUser(UUID userId) {
+        User user = repository.findById(userId)
+                .orElseThrow(() -> new BusinessException(
+                        404,
+                        "user_not_found",
+                        "User not found"
+                ));
+
+        if (user.getFgInactive()) {
+            throw new BusinessException(
+                    409,
+                    "user_already_inactive",
+                    "User is already inactive"
+            );
         }
+
+        user.setFgInactive(true);
+        user.setUpdatedAt(LocalDateTime.now());
+        repository.save(user);
+
+        return new ApiResponse("User deactivated successfully", 200, "user_desactivated_sucessfully");
+    }
+
+    @Transactional
+    public ApiResponse activateUser(UUID userId) {
+        User user = repository.findById(userId)
+                .orElseThrow(() -> new BusinessException(
+                        404,
+                        "user_not_found",
+                        "User not found"
+                ));
+
+        if (!user.getFgInactive()) {
+            throw new BusinessException(
+                    409,
+                    "user_already_active",
+                    "User is already active"
+            );
+        }
+
+        user.setFgInactive(false);
+        user.setUpdatedAt(LocalDateTime.now());
+        repository.save(user);
+
+        return new ApiResponse("User activated successfully", 200, "user_activated_sucessfully");
     }
 
     public void deleteUser(UUID userId) {
