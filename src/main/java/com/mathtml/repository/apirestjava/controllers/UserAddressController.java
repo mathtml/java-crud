@@ -4,16 +4,13 @@ import com.mathtml.repository.apirestjava.model.User;
 import com.mathtml.repository.apirestjava.model.UserAddress;
 import com.mathtml.repository.apirestjava.repository.UserAddressRepository;
 import com.mathtml.repository.apirestjava.repository.UserRepository;
+import com.mathtml.repository.apirestjava.dto.UserAddressResponse;
 
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users/{userId}/addresses")
@@ -28,17 +25,23 @@ public class UserAddressController {
     }
 
     @PostMapping
-    public UserAddress createAddress(@PathVariable UUID userId, @RequestBody UserAddress address) {
+    public UserAddressResponse createAddress(@PathVariable UUID userId, @RequestBody UserAddress address) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         address.setUser(user);
-        return addressRepository.save(address);
+        UserAddress savedAddress = addressRepository.save(address);
+
+        return new UserAddressResponse(savedAddress);
     }
 
     @GetMapping
-    public List<UserAddress> getUserAddresses(@PathVariable UUID userId) {
-        return addressRepository.findByUser_UserId(userId);
+    public List<UserAddressResponse> getUserAddresses(@PathVariable UUID userId) {
+        List<UserAddress> addresses = addressRepository.findByUser_UserId(userId);
+
+        return addresses.stream()
+                .map(UserAddressResponse::new)
+                .collect(Collectors.toList());
     }
 }
